@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Η Χιονάτη - Προβλέψιμη Αφήγηση</title>
+    <style>
+        body {
+            /* Απαλό, ήρεμο μπλε φόντο που βοηθά στη μείωση της αισθητηριακής υπερφόρτωσης */
+            background-color: #eef2f7;
+            font-family: Arial, Helvetica, sans-serif; /* Καθαρή γραμματοσειρά, χωρίς διακοσμητικά στοιχεία */
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        #dashboard {
+            width: 100%;
+            max-width: 650px;
+            background-color: #ffffff;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-sizing: border-box;
+        }
+
+        .meter-title {
+            font-size: 14px;
+            font-weight: bold;
+            color: #555;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .status-badge {
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* Χρώματα Κατάστασης για την Πρόβλεψη της Σκηνής */
+        .status-calm { background-color: #d4edda; color: #155724; }
+        .status-alert { background-color: #fff3cd; color: #856404; }
+        .status-happy { background-color: #cce5ff; color: #004085; }
+
+        #book-container {
+            background-color: #ffffff;
+            width: 100%;
+            max-width: 650px;
+            min-height: 400px;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            box-sizing: border-box;
+        }
+
+        #story-text {
+            font-size: 22px;
+            line-height: 1.8;
+            color: #333;
+            flex-grow: 1;
+        }
+
+        /* Κάρτα επεξήγησης συναισθημάτων για απόλυτη κοινωνική σαφήνεια */
+        .emotion-card {
+            background-color: #f8f9fa;
+            border-left: 5px solid #4a90e2;
+            padding: 12px 20px;
+            margin: 20px 0;
+            border-radius: 0 8px 8px 0;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            font-size: 18px;
+            color: #555;
+        }
+
+        .emotion-emoji {
+            font-size: 32px;
+        }
+
+        #controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 2px solid #f1f1f1;
+        }
+
+        button {
+            padding: 12px 28px;
+            font-size: 16px;
+            cursor: pointer;
+            border: 2px solid #4a90e2;
+            border-radius: 8px;
+            background-color: #4a90e2;
+            color: white;
+            font-weight: bold;
+            transition: all 0.2s;
+        }
+
+        button:hover {
+            background-color: #357abd;
+            border-color: #357abd;
+        }
+
+        button.secondary {
+            background-color: transparent;
+            color: #4a90e2;
+        }
+
+        button.secondary:hover {
+            background-color: #eef2f7;
+        }
+
+        button:disabled {
+            background-color: #e9ecef;
+            border-color: #e9ecef;
+            color: #adb5bd;
+            cursor: not-allowed;
+        }
+
+        #page-number {
+            font-size: 16px;
+            font-weight: bold;
+            color: #888;
+        }
+
+        /* Προσαρμογή για Κινητά Τηλέφωνα */
+        @media screen and (max-width: 600px) {
+            #book-container {
+                padding: 20px;
+                min-height: auto;
+            }
+
+            #story-text {
+                font-size: 18px;
+            }
+
+            .emotion-card {
+                font-size: 15px;
+                padding: 10px;
+            }
+
+            #controls {
+                flex-direction: column;
+                gap: 12px;
+            }
+
+            button {
+                width: 100%;
+                padding: 14px;
+            }
+
+            #page-number {
+                order: -1;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="dashboard">
+        <span class="meter-title">Κατάσταση Ιστορίας:</span>
+        <div id="status-badge" class="status-badge status-calm">
+            <span id="status-icon">😌</span> <span id="status-text">Ήρεμη Σκηνή</span>
+        </div>
+    </div>
+
+    <div id="book-container">
+        <div id="story-content">
+            <div id="story-text"></div>
+            <div id="emotion-anchor"></div>
+        </div>
+        
+        <div id="controls">
+            <button id="prevBtn" class="secondary" onclick="changePage(-1)">Πίσω</button>
+            <span id="page-number">Σελίδα 1 / 10</span>
+            <button id="nextBtn" onclick="changePage(1)">Επόμενη</button>
+        </div>
+    </div>
+
+    <script>
+        // Η δομή των δεδομένων με το ελληνικό κείμενο, την πρόβλεψη και την ανάλυση συναισθημάτων
+        const storyPages = [
+            {
+                text: "Μια καλή βασίλισσα καθόταν δίπλα στο παράθυρο και έραβε. Ήθελε πολύ να αποκτήσει μια κόρη. Ήλπιζε το μωρό να έχει πολύ λευκό δέρμα και πολύ κόκκινα χείλη.",
+                type: "calm",
+                statusText: "Ασφαλές & Ήρεμο",
+                icon: "😌",
+                emotion: {
+                    character: "Η Βασίλισσα",
+                    feeling: "Γεμάτη Ελπίδα",
+                    explanation: "Σκέφτεται πόσο ευτυχισμένη θα είναι στο μέλλον μαζί με το μωρό της.",
+                    emoji: "😊"
+                }
+            },
+            {
+                text: "Η βασίλισσα γέννησε ένα κοριτσάκι και το ονόμασε Χιονάτη. Μετά από λίγο καιρό, η βασίλισσα αρρώστησε βαριά και πέθανε. Ο βασιλιάς παντρεύτηκε μια νέα βασίλισσα για να κυβερνούν μαζί το βασίλειο.",
+                type: "calm",
+                statusText: "Αλλαγή στη Ζωή",
+                icon: "😐",
+                emotion: {
+                    character: "Η Οικογένεια",
+                    feeling: "Σοβαροί και Ήρεμοι",
+                    explanation: "Τους λείπει η παλιά βασίλισσα, αλλά η ζωή τους συνεχίζεται με αλλαγές.",
+                    emoji: "🙁"
+                }
+            },
+            {
+                text: "Η νέα βασίλισσα ήταν πολύ περήφανη για την εξωτερική της εμφάνιση. Είχε έναν μαγικό καθρέφτη. Κάθε μέρα τον ρωτούσε: 'Ποιος είναι ο πιο όμορφος άνθρωπος στο βασίλειο;'",
+                type: "calm",
+                statusText: "Κανονικό Γεγονός",
+                icon: "ℹ️",
+                emotion: {
+                    character: "Η Νέα Βασίλισσα",
+                    feeling: "Περήφανη και Εγωίστρια",
+                    explanation: "Χαμογελάει επειδή πιστεύει ότι είναι καλύτερη από όλους τους άλλους ανθρώπους.",
+                    emoji: "😏"
+                }
+            },
+            {
+                text: "Για πολλά χρόνια, ο καθρέφτης έλεγε στη βασίλισσα ότι εκείνη ήταν η πιο όμορφη. Όμως η Χιονάτη μεγάλωσε και έγινε ένας πολύ ευγενικός, βοηθητικός και όμορφος άνθρωπος.",
+                type: "calm",
+                statusText: "Ασφαλές & Ήρεμο",
+                icon: "😌",
+                emotion: {
+                    character: "Η Χιονάτη",
+                    feeling: "Χαρούμενη και Φιλική",
+                    explanation: "Της αρέσει να είναι καλή με τους άλλους και αυτό την κάνει να νιώθει γαλήνη μέσα της.",
+                    emoji: "😀"
+                }
+            },
+            {
+                text: "Μια μέρα, ο καθρέφτης είπε στη βασίλισσα ότι η Χιονάτη ήταν πλέον πιο όμορφη από εκείνη. Αυτή η αληθινή δήλωση έκανε τη βασίλισσα να νιώσει μεγάλο θυμό και ζήλεια.",
+                type: "alert",
+                statusText: "Έρχεται Πρόβλημα",
+                icon: "⚠️",
+                emotion: {
+                    character: "Η Βασίλισσα",
+                    feeling: "Θυμωμένη και Ζηλιάρα",
+                    explanation: "Έχει κατεβασμένα φρύδια επειδή θέλει να είναι η μοναδική που θα θαυμάζουν.",
+                    emoji: "😡"
+                }
+            },
+            {
+                text: "Η θυμωμένη βασίλισσα διέταξε έναν κυνηγό να πάρει τη Χιονάτη μέσα στο δάσος για να μην επιστρέψει ποτέ. Όμως, ο κυνηγός ήταν καλός άνθρωπος. Είπε στη Χιονάτη να τρέξει να κρυφτεί για να είναι ασφαλής.",
+                type: "alert",
+                statusText: "Ασφαλής Πράξη",
+                icon: "🛡️",
+                emotion: {
+                    character: "Ο Κυνηγός",
+                    feeling: "Προστατευτικός και Βοηθητικός",
+                    explanation: "Βοηθάει τη Χιονάτη να ξεφύγει επειδή ξέρει ότι η εντολή της βασίλισσας είναι κακιά.",
+                    emoji: "🤝"
+                }
+            },
+            {
+                text: "Η Χιονάτη περπάτησε ανάμεσα στα δέντρα και βρήκε ένα μικρό σπιτάκι. Μέσα υπήρχαν επτά μικρές καρέκλες και επτά μικρά κρεβάτια. Κάθισε αμέσως επειδή τα πόδια της είχαν κουραστεί από το περπάτημα.",
+                type: "calm",
+                statusText: "Ήσυχο Καταφύγιο",
+                icon: "🏡",
+                emotion: {
+                    character: "Η Χιονάτη",
+                    feeling: "Κουρασμένη αλλά Ανακουφισμένη",
+                    explanation: "Νιώθει πιο ήρεμη τώρα που βρήκε ένα ασφαλές μέρος για να ξεκουραστεί.",
+                    emoji: "😮‍💨"
+                }
+            },
+            {
+                text: "Στο σπιτάκι έμεναν επτά νάνοι. Γύρισαν από τη δουλειά τους και συνάντησαν τη Χιονάτη. Την συμπάθησαν και της είπαν ότι μπορεί να μείνει μαζί τους για να μην την βρει η βασίλισσα.",
+                type: "happy",
+                statusText: "Φιλική Σκηνή",
+                icon: "✨",
+                emotion: {
+                    character: "Οι Επτά Νάνοι",
+                    feeling: "Φιλικοί και Φιλόξενοι",
+                    explanation: "Χαμογελούν και της κάνουν νόημα να καθίσει για να νιώσει ευπρόσδεκτη.",
+                    emoji: "🤗"
+                }
+            },
+            {
+                text: "Η βασίλισσα έμαθε πού κρυβόταν η Χιονάτη. Άλλαξε τα ρούχα και το πρόσωπό της για να μοιάζει με μια ηλικιωμένη γυναίκα που ταξιδεύει. Πήγε στο σπιτάκι και έδωσε στη Χιονάτη ένα μήλο που είχε μέσα φάρμακο για βαθύ ύπνο.",
+                type: "alert",
+                statusText: "Παγίδα / Κόλπο",
+                icon: "⚠️",
+                emotion: {
+                    character: "Η Βασίλισσα",
+                    feeling: "Πονηρή και Ανειλικρινής",
+                    explanation: "Κρύβει το πραγματικό της πρόσωπο για να ξεγελάσει τη Χιονάτη και να την κάνει να την εμπιστευτεί.",
+                    emoji: "🥸"
+                }
+            },
+            {
+                text: "Η Χιονάτη έφαγε μια μπουκιά από το μήλο και έπεσε σε βαθύ ύπνο. Αργότερα, ένας καλός πρίγκιπας την βρήκε και τη βοήθησε να ξυπνήσει. Όλοι οι χαρακτήρες ήταν ξανά χαρούμενοι και απόλυτα ασφαλείς.",
+                type: "happy",
+                statusText: "Χαρούμενο Τέλος",
+                icon: "🎉",
+                emotion: {
+                    character: "Όλοι μαζί",
+                    feeling: "Ευτυχισμένοι και Ασφαλείς",
+                    explanation: "Η ιστορία ολοκληρώθηκε με επιτυχία. Δεν υπάρχει πια κανένας κίνδυνος ή κακή έκπληξη.",
+                    emoji: "🥳"
+                }
+            }
+        ];
+
+        let currentPageIndex = 0;
+
+        const storyText = document.getElementById('story-text');
+        const emotionAnchor = document.getElementById('emotion-anchor');
+        const statusBadge = document.getElementById('status-badge');
+        const statusIcon = document.getElementById('status-icon');
+        const statusText = document.getElementById('status-text');
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const pageNumberDisplay = document.getElementById('page-number');
+
+        function renderPage() {
+            const pageData = storyPages[currentPageIndex];
+            
+            storyText.innerText = pageData.text;
+            
+            statusBadge.className = "status-badge";
+            if(pageData.type === 'calm') statusBadge.classList.add('status-calm');
+            if(pageData.type === 'alert') statusBadge.classList.add('status-alert');
+            if(pageData.type === 'happy') statusBadge.classList.add('status-happy');
+            
+            statusIcon.innerText = pageData.icon;
+            statusText.innerText = pageData.statusText;
+
+            emotionAnchor.innerHTML = `
+                <div class="emotion-card">
+                    <div class="emotion-emoji">${pageData.emotion.emoji}</div>
+                    <div>
+                        <strong>${pageData.emotion.character} νιώθει ${pageData.emotion.feeling}:</strong><br>
+                        <span>${pageData.emotion.explanation}</span>
+                    </div>
+                </div>
+            `;
+            
+            pageNumberDisplay.innerText = `Σελίδα ${currentPageIndex + 1} / ${storyPages.length}`;
+            prevBtn.disabled = currentPageIndex === 0;
+            nextBtn.disabled = currentPageIndex === storyPages.length - 1;
+        }
+
+        function changePage(direction) {
+            currentPageIndex += direction;
+            renderPage();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        renderPage();
+    </script>
+</body>
+</html>

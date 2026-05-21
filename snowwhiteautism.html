@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Snow White - Predictable Storytelling</title>
+    <style>
+        body {
+            /* Soft, cool blue background which is proven to be calming for sensory processing */
+            background-color: #eef2f7;
+            font-family: Arial, Helvetica, sans-serif; /* Clean, sans-serif font with no distracting elements */
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        #dashboard {
+            width: 100%;
+            max-width: 650px;
+            background-color: #ffffff;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-sizing: border-box;
+        }
+
+        .meter-title {
+            font-size: 14px;
+            font-weight: bold;
+            color: #555;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .status-badge {
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* Status Colors for Predictability */
+        .status-calm { background-color: #d4edda; color: #155724; }
+        .status-alert { background-color: #fff3cd; color: #856404; }
+        .status-happy { background-color: #cce5ff; color: #004085; }
+
+        #book-container {
+            background-color: #ffffff;
+            width: 100%;
+            max-width: 650px;
+            min-height: 400px;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            box-sizing: border-box;
+        }
+
+        #story-text {
+            font-size: 22px;
+            line-height: 1.8;
+            color: #333;
+            flex-grow: 1;
+        }
+
+        /* Highlight box for explicit emotional clarity */
+        .emotion-card {
+            background-color: #f8f9fa;
+            border-left: 5px solid #4a90e2;
+            padding: 12px 20px;
+            margin: 20px 0;
+            border-radius: 0 8px 8px 0;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            font-size: 18px;
+            color: #555;
+        }
+
+        .emotion-emoji {
+            font-size: 32px;
+        }
+
+        #controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 2px solid #f1f1f1;
+        }
+
+        button {
+            padding: 12px 28px;
+            font-size: 16px;
+            cursor: pointer;
+            border: 2px solid #4a90e2;
+            border-radius: 8px;
+            background-color: #4a90e2;
+            color: white;
+            font-weight: bold;
+            transition: all 0.2s;
+        }
+
+        button:hover {
+            background-color: #357abd;
+            border-color: #357abd;
+        }
+
+        button.secondary {
+            background-color: transparent;
+            color: #4a90e2;
+        }
+
+        button.secondary:hover {
+            background-color: #eef2f7;
+        }
+
+        button:disabled {
+            background-color: #e9ecef;
+            border-color: #e9ecef;
+            color: #adb5bd;
+            cursor: not-allowed;
+        }
+
+        #page-number {
+            font-size: 16px;
+            font-weight: bold;
+            color: #888;
+        }
+
+        /* Responsive Design for Mobile Devices */
+        @media screen and (max-width: 600px) {
+            #book-container {
+                padding: 20px;
+                min-height: auto;
+            }
+
+            #story-text {
+                font-size: 18px;
+            }
+
+            .emotion-card {
+                font-size: 15px;
+                padding: 10px;
+            }
+
+            #controls {
+                flex-direction: column;
+                gap: 12px;
+            }
+
+            button {
+                width: 100%;
+                padding: 14px;
+            }
+
+            #page-number {
+                order: -1;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="dashboard">
+        <span class="meter-title">Story Mode:</span>
+        <div id="status-badge" class="status-badge status-calm">
+            <span id="status-icon">😌</span> <span id="status-text">Calm Scene</span>
+        </div>
+    </div>
+
+    <div id="book-container">
+        <div id="story-content">
+            <div id="story-text"></div>
+            <div id="emotion-anchor"></div>
+        </div>
+        
+        <div id="controls">
+            <button id="prevBtn" class="secondary" onclick="changePage(-1)">Back</button>
+            <span id="page-number">Page 1 / 10</span>
+            <button id="nextBtn" onclick="changePage(1)">Next Page</button>
+        </div>
+    </div>
+
+    <script>
+        // Data structure containing the literal text, the type of scene, and the explicit emotion breakdown
+        const storyPages = [
+            {
+                text: "A kind Queen sat by her window sewing. She wanted to have a baby daughter with very pale skin and very red lips.",
+                type: "calm",
+                statusText: "Safe & Calm",
+                icon: "😌",
+                emotion: {
+                    character: "The Queen",
+                    feeling: "Hopeful",
+                    explanation: "She is thinking about a happy future with a baby.",
+                    emoji: "😊"
+                }
+            },
+            {
+                text: "The Queen had a baby girl and named her Snow White. Soon after, the Queen died. The King married a new Queen to help rule the kingdom.",
+                type: "calm",
+                statusText: "Moving Forward",
+                icon: "😐",
+                emotion: {
+                    character: "The Family",
+                    feeling: "Sad then Serious",
+                    explanation: "They miss the old Queen, but life is changing now.",
+                    emoji: "🙁"
+                }
+            },
+            {
+                text: "The new Queen was very proud of her looks. She looked into a magic mirror every day and asked, 'Who is the most beautiful person here?'",
+                type: "calm",
+                statusText: "Normal Event",
+                icon: "ℹ️",
+                emotion: {
+                    character: "The New Queen",
+                    feeling: "Vain and Proud",
+                    explanation: "She smiles because she thinks she is better than everyone else.",
+                    emoji: "😏"
+                }
+            },
+            {
+                text: "The magic mirror always answered that the Queen was the most beautiful. But as Snow White grew older, she became very kind and very beautiful.",
+                type: "calm",
+                statusText: "Safe & Calm",
+                icon: "😌",
+                emotion: {
+                    character: "Snow White",
+                    feeling: "Friendly and Peaceful",
+                    explanation: "She likes helping people and feels happy inside.",
+                    emoji: "😀"
+                }
+            },
+            {
+                text: "One day, the mirror told the Queen that Snow White was now more beautiful than her. This made the Queen feel very angry and jealous.",
+                type: "alert",
+                statusText: "Problem Coming",
+                icon: "⚠️",
+                emotion: {
+                    character: "The Queen",
+                    feeling: "Jealous and Angry",
+                    explanation: "She is frowning because she wants to be the only favorite person.",
+                    emoji: "😡"
+                }
+            },
+            {
+                text: "The angry Queen told a huntsman to take Snow White into the forest so she would not come back. But the huntsman was a nice man. He told Snow White to run away and hide safely.",
+                type: "alert",
+                statusText: "Safe Action",
+                icon: "🛡️",
+                emotion: {
+                    character: "The Huntsman",
+                    feeling: "Caring and Helpful",
+                    explanation: "He protects Snow White because he knows the Queen's plan is wrong.",
+                    emoji: "🤝"
+                }
+            },
+            {
+                text: "Snow White walked through the trees and found a very small house. Inside, there were seven small chairs and seven small beds. She sat down because her legs were tired.",
+                type: "calm",
+                statusText: "Safe & Quiet",
+                icon: "🏡",
+                emotion: {
+                    character: "Snow White",
+                    feeling: "Tired but Relieved",
+                    explanation: "She feels safer now that she found a house to rest in.",
+                    emoji: "😮‍💨"
+                }
+            },
+            {
+                text: "Seven dwarfs lived in the house. They came home from work and found Snow White. They liked her and told her she could live with them to stay safe from the Queen.",
+                type: "happy",
+                statusText: "Friendly Scene",
+                icon: "✨",
+                emotion: {
+                    character: "The Seven Dwarfs",
+                    feeling: "Welcoming and Kind",
+                    explanation: "They smile and wave to make Snow White feel happy.",
+                    emoji: "🤗"
+                }
+            },
+            {
+                text: "The Queen found out where Snow White was. She mixed a magic spell, changed her clothes to look like an old traveler, and gave Snow White an apple with sleeping poison inside.",
+                type: "alert",
+                statusText: "Tricky Action",
+                icon: "⚠️",
+                emotion: {
+                    character: "The Queen",
+                    feeling: "Sneaky and Dishonest",
+                    explanation: "She is hiding her real identity to trick Snow White.",
+                    emoji: "🥸"
+                }
+            },
+            {
+                text: "Snow White ate the apple and fell into a deep sleep. Later, a kind Prince found her and helped her wake up. Everyone was happy and safe again.",
+                type: "happy",
+                statusText: "Happy Ending",
+                icon: "🎉",
+                emotion: {
+                    character: "Everyone",
+                    feeling: "Joyful and Safe",
+                    explanation: "The story is finished and there are no more bad surprises.",
+                    emoji: "🥳"
+                }
+            }
+        ];
+
+        let currentPageIndex = 0;
+
+        const storyText = document.getElementById('story-text');
+        const emotionAnchor = document.getElementById('emotion-anchor');
+        const statusBadge = document.getElementById('status-badge');
+        const statusIcon = document.getElementById('status-icon');
+        const statusText = document.getElementById('status-text');
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const pageNumberDisplay = document.getElementById('page-number');
+
+        function renderPage() {
+            const pageData = storyPages[currentPageIndex];
+            
+            // 1. Update the Story Text
+            storyText.innerText = pageData.text;
+            
+            // 2. Update the Predictability Meter Style & Text
+            statusBadge.className = "status-badge"; // reset
+            if(pageData.type === 'calm') statusBadge.classList.add('status-calm');
+            if(pageData.type === 'alert') statusBadge.classList.add('status-alert');
+            if(pageData.type === 'happy') statusBadge.classList.add('status-happy');
+            
+            statusIcon.innerText = pageData.icon;
+            statusText.innerText = pageData.statusText;
+
+            // 3. Update the Concrete Emotion Explanation Box
+            emotionAnchor.innerHTML = `
+                <div class="emotion-card">
+                    <div class="emotion-emoji">${pageData.emotion.emoji}</div>
+                    <div>
+                        <strong>${pageData.emotion.character} feels ${pageData.emotion.feeling}:</strong><br>
+                        <span>${pageData.emotion.explanation}</span>
+                    </div>
+                </div>
+            `;
+            
+            // 4. Handle Navigation Buttons
+            pageNumberDisplay.innerText = `Page ${currentPageIndex + 1} / ${storyPages.length}`;
+            prevBtn.disabled = currentPageIndex === 0;
+            nextBtn.disabled = currentPageIndex === storyPages.length - 1;
+        }
+
+        function changePage(direction) {
+            currentPageIndex += direction;
+            renderPage();
+            // Scroll to top of page smoothly so layout changes don't disorient the child
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // Initialize the first page
+        renderPage();
+    </script>
+</body>
+</html>

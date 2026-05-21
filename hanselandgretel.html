@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hansel and Gretel - Dyslexia Friendly</title>
+    <style>
+        /* Import a dyslexia-friendly font */
+        @import url('https://fonts.cdnfonts.com/css/opendyslexic');
+
+        body {
+            background-color: #c8d603;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            font-family: sans-serif;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        #book-container {
+            /* Soft off-white background to drastically reduce visual fatigue */
+            background-color: #fdf6e3; 
+            width: 90%;
+            max-width: 700px;
+            min-height: 450px;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 15px 30px rgba(0,0,0,0.5), inset 0 0 20px rgba(0,0,0,0.05);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            position: relative;
+            box-sizing: border-box;
+        }
+
+        /* Subtle vertical line simulating a book spine */
+        #book-container::before {
+            content: '';
+            position: absolute;
+            left: 20px;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: rgba(0,0,0,0.1);
+        }
+
+        #story-text {
+            /* Fallbacks to highly legible standard fonts if network fails to load OpenDyslexic */
+            font-family: 'OpenDyslexic', 'Comic Sans MS', Verdana, sans-serif;
+            font-size: 24px;
+            line-height: 2.3; /* Generous spacing keeps lines from blurring together */
+            letter-spacing: 0.12em; /* Prevents crowding of characters */
+            color: #222;
+            flex-grow: 1;
+        }
+
+        /* Wrap each word to apply clean transitions when highlighted */
+        .word {
+            display: inline-block;
+            padding: 2px 6px;
+            margin: 0 3px;
+            border-radius: 6px;
+            transition: background-color 0.1s ease-in-out;
+        }
+
+        /* Calm, high-contrast but low-glare highlighting */
+        .highlight {
+            background-color: #fa87e1; 
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        #controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 2px dashed #ccc;
+        }
+
+        button {
+            padding: 12px 24px;
+            font-size: 18px;
+            font-family: inherit;
+            cursor: pointer;
+            border: none;
+            border-radius: 8px;
+            background-color: #e24ad5;
+            color: white;
+            font-weight: bold;
+            transition: background 0.2s;
+        }
+
+        button:hover {
+            background-color: #c5df33;
+        }
+
+        button:disabled {
+            background-color: #a0b4c7;
+            cursor: not-allowed;
+        }
+
+        #page-number {
+            font-family: 'OpenDyslexic', sans-serif;
+            font-size: 18px;
+            color: #666;
+        }
+
+        /* Mobile & Tablet Adaptation Rules */
+        @media screen and (max-width: 600px) {
+            body {
+                padding: 10px;
+            }
+
+            #book-container {
+                width: 100%;
+                padding: 20px;
+                min-height: auto;
+            }
+
+            #book-container::before {
+                display: none; /* Hide decorative spine line on tiny screens */
+            }
+
+            #story-text {
+                font-size: 18px; /* Slightly scaled down text so it fits comfortably on phones */
+                line-height: 2.0;
+            }
+
+            #controls {
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            button {
+                width: 100%;
+                text-align: center;
+                padding: 12px;
+            }
+
+            #page-number {
+                order: -1; /* Pushes page tracking numbers above the control buttons */
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="book-container">
+        <div id="story-text"></div>
+        
+        <div id="controls">
+            <button id="prevBtn" onclick="changePage(-1)">Previous</button>
+            <button id="playBtn" onclick="playReading()">Read to Me</button>
+            <span id="page-number">Page 1 / 10</span>
+            <button id="nextBtn" onclick="changePage(1)">Next</button>
+        </div>
+    </div>
+
+    <script>
+        // Hansel and Gretel 10-page English narrative adaptation
+        const storyPages = [
+            "Once upon a time, a brother and sister named Hansel and Gretel lived with their father and stepmother near a vast forest.",
+            "The family was very poor and had little food. The cruel stepmother convinced the father to leave the children deep in the woods.",
+            "Clever Hansel overheard their plan. He filled his pockets with white pebbles and, as they walked, dropped them secretly on the ground.",
+            "The parents went away, leaving the children alone. When the full moon rose, the pebbles shone brightly, and the children found their way home.",
+            "The stepmother was furious. The next time, she locked the door. Hansel had no pebbles, so he dropped crumbs of his bread on the path instead.",
+            "Left alone again, the children searched for the crumbs. But the forest birds had eaten them all, and the siblings were lost in the dark.",
+            "They walked for days until they saw a strange house. It was built from delicious chocolate, fragrant cake, and sweet sugar.",
+            "As they ate pieces of the walls, a wicked witch stepped outside. She trapped Hansel in a cage and forced Gretel to do all the chores.",
+            "The witch prepared a large oven to cook them. But clever Gretel tricked her, pushed the witch inside, and quickly shut the heavy door.",
+            "Gretel freed Hansel immediately. They took the witch's hidden treasures, found their way back home, and hugged their father with great joy."
+        ];
+
+        let currentPageIndex = 0;
+        let isReading = false;
+        
+        const synth = window.speechSynthesis;
+        let utterance;
+
+        const storyTextContainer = document.getElementById('story-text');
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const playBtn = document.getElementById('playBtn');
+        const pageNumberDisplay = document.getElementById('page-number');
+
+        function renderPage() {
+            stopReading(); // Stop previous voice execution instantly if turning pages
+            
+            const currentText = storyPages[currentPageIndex];
+            const words = currentText.split(" ").map(word => `<span class="word">${word}</span>`).join(" ");
+            
+            storyTextContainer.innerHTML = words;
+            pageNumberDisplay.innerText = `Page ${currentPageIndex + 1} / ${storyPages.length}`;
+            
+            prevBtn.disabled = currentPageIndex === 0;
+            nextBtn.disabled = currentPageIndex === storyPages.length - 1;
+        }
+
+        function changePage(direction) {
+            currentPageIndex += direction;
+            if (currentPageIndex < 0) currentPageIndex = 0;
+            if (currentPageIndex >= storyPages.length) currentPageIndex = storyPages.length - 1;
+            renderPage();
+        }
+
+        function playReading() {
+            if (isReading) return; 
+            
+            isReading = true;
+            playBtn.innerText = "Reading...";
+            playBtn.disabled = true;
+
+            const wordsDOM = document.querySelectorAll('.word');
+            const currentText = storyPages[currentPageIndex];
+            
+            utterance = new SpeechSynthesisUtterance(currentText);
+            utterance.lang = 'en-US'; // Set audio engine voice parsing to English
+            utterance.rate = 0.85;   // Comfortable, steady speed for tracking words
+
+            let wordIndex = 0;
+
+            // Track boundaries directly via browser speech engine callbacks
+            utterance.onboundary = function(event) {
+                if (event.name === 'word') {
+                    wordsDOM.forEach(w => w.classList.remove('highlight'));
+                    
+                    if (wordIndex < wordsDOM.length) {
+                        wordsDOM[wordIndex].classList.add('highlight');
+                        wordIndex++;
+                    }
+                }
+            };
+
+            utterance.onend = function() {
+                stopReading();
+            };
+
+            synth.speak(utterance);
+        }
+
+        function stopReading() {
+            if (synth.speaking) {
+                synth.cancel();
+            }
+            
+            isReading = false;
+            playBtn.innerText = "Read to Me";
+            playBtn.disabled = false;
+            
+            const wordsDOM = document.querySelectorAll('.word');
+            wordsDOM.forEach(w => w.classList.remove('highlight'));
+        }
+
+        // Initialize display configuration on browser start
+        renderPage();
+    </script>
+</body>
+</html>

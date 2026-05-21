@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Snow White - Voice Synced</title>
+    <style>
+        @import url('https://fonts.cdnfonts.com/css/opendyslexic');
+
+        body {
+            background-color: #546008;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            font-family: sans-serif;
+        }
+
+        #book-container {
+            background-color: #fdf6e3;
+            width: 90%;
+            max-width: 700px;
+            min-height: 400px;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 15px 30px rgba(0,0,0,0.5), inset 0 0 20px rgba(0,0,0,0.05);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            position: relative;
+        }
+
+        #book-container::before {
+            content: '';
+            position: absolute;
+            left: 20px;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: rgba(0,0,0,0.1);
+        }
+
+        #story-text {
+            font-family: 'OpenDyslexic', 'Comic Sans MS', Verdana, sans-serif;
+            font-size: 24px;
+            line-height: 2.2;
+            letter-spacing: 0.1em;
+            color: #222;
+            flex-grow: 1;
+        }
+
+        .word {
+            display: inline-block;
+            padding: 2px 6px;
+            margin: 0 2px;
+            border-radius: 6px;
+            transition: background-color 0.1s ease-in-out;
+        }
+
+        .highlight {
+            background-color: #f6fa87;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        #controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 2px dashed #ccc;
+        }
+
+        button {
+            padding: 12px 24px;
+            font-size: 18px;
+            font-family: inherit;
+            cursor: pointer;
+            border: none;
+            border-radius: 8px;
+            background-color: #e24ad8;
+            color: white;
+            font-weight: bold;
+            transition: background 0.2s;
+        }
+
+        button:hover {
+            background-color: #bd35a4;
+        }
+
+        button:disabled {
+            background-color: #a0b4c7;
+            cursor: not-allowed;
+        }
+
+        #page-number {
+            font-family: 'OpenDyslexic', sans-serif;
+            font-size: 18px;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="book-container">
+        <div id="story-text"></div>
+        
+        <div id="controls">
+            <button id="prevBtn" onclick="changePage(-1)">Previous</button>
+            <button id="playBtn" onclick="playReading()">Read to Me</button>
+            <span id="page-number">Page 1 / 10</span>
+            <button id="nextBtn" onclick="changePage(1)">Next</button>
+        </div>
+    </div>
+
+    <script>
+        const storyPages = [
+            "Once upon a time, a Queen sat sewing by her window. She wished for a daughter with skin as white as snow, and lips as red as a rose.",
+            "Her wish came true. The baby was named Snow White. But sadly, the good Queen soon passed away, and a new Queen took the throne.",
+            "The new Queen was beautiful, but she was very vain. She had a magic mirror and asked it every day, 'Who is the fairest of them all?'",
+            "For years, the mirror said the Queen was the fairest. But as Snow White grew up, she became kinder and far more beautiful than the Queen.",
+            "One day, the mirror told the Queen that Snow White was now the fairest. The jealous Queen ordered a huntsman to take the princess far away.",
+            "The huntsman felt sorry for the sweet girl. He let her run deep into the forest and told her never to return to the castle.",
+            "Snow White ran until she found a tiny cottage. Inside, there were seven little chairs and seven little beds. She was so tired, she fell fast asleep.",
+            "When night fell, seven dwarfs came home from the mines. They found the sleeping girl and agreed to let her stay with them to keep her safe.",
+            "But the magic mirror told the Queen where Snow White was hiding. The wicked Queen disguised herself as an old woman and offered Snow White a shiny, poisoned apple.",
+            "Snow White took one bite and fell into a deep sleep. But soon, a kind Prince found her. His kiss broke the spell, and they lived happily ever after."
+        ];
+
+        let currentPageIndex = 0;
+        let isReading = false;
+        
+        // Initialize the Web Speech API
+        const synth = window.speechSynthesis;
+        let utterance;
+
+        const storyTextContainer = document.getElementById('story-text');
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const playBtn = document.getElementById('playBtn');
+        const pageNumberDisplay = document.getElementById('page-number');
+
+        function renderPage() {
+            stopReading(); // Stop audio if page is turned
+            
+            const currentText = storyPages[currentPageIndex];
+            const words = currentText.split(" ").map(word => `<span class="word">${word}</span>`).join(" ");
+            
+            storyTextContainer.innerHTML = words;
+            pageNumberDisplay.innerText = `Page ${currentPageIndex + 1} / ${storyPages.length}`;
+            
+            prevBtn.disabled = currentPageIndex === 0;
+            nextBtn.disabled = currentPageIndex === storyPages.length - 1;
+        }
+
+        function changePage(direction) {
+            currentPageIndex += direction;
+            if (currentPageIndex < 0) currentPageIndex = 0;
+            if (currentPageIndex >= storyPages.length) currentPageIndex = storyPages.length - 1;
+            renderPage();
+        }
+
+        function playReading() {
+            if (isReading) return; 
+            
+            isReading = true;
+            playBtn.innerText = "Reading...";
+            playBtn.disabled = true;
+
+            const wordsDOM = document.querySelectorAll('.word');
+            const currentText = storyPages[currentPageIndex];
+            
+            // Create the speech utterance
+            utterance = new SpeechSynthesisUtterance(currentText);
+            
+            // Slow down the reading speed slightly for better tracking
+            utterance.rate = 0.85; 
+
+            let wordIndex = 0;
+
+            // The browser fires this event every time it reaches a new word boundary
+            utterance.onboundary = function(event) {
+                if (event.name === 'word') {
+                    wordsDOM.forEach(w => w.classList.remove('highlight'));
+                    
+                    if (wordIndex < wordsDOM.length) {
+                        wordsDOM[wordIndex].classList.add('highlight');
+                        wordIndex++;
+                    }
+                }
+            };
+
+            // Reset when finished reading the page
+            utterance.onend = function() {
+                stopReading();
+            };
+
+            // Start speaking
+            synth.speak(utterance);
+        }
+
+        function stopReading() {
+            // Cancel the audio
+            if (synth.speaking) {
+                synth.cancel();
+            }
+            
+            isReading = false;
+            playBtn.innerText = "Read to Me";
+            playBtn.disabled = false;
+            
+            // Clear highlights
+            const wordsDOM = document.querySelectorAll('.word');
+            wordsDOM.forEach(w => w.classList.remove('highlight'));
+        }
+
+        renderPage();
+    </script>
+</body>
+</html>

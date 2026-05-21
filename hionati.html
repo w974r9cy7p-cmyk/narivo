@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Η Χιονάτη - Φιλικό προς τη Δυσλεξία</title>
+    <style>
+        /* Εισαγωγή γραμματοσειράς ειδικής για τη δυσλεξία */
+        @import url('https://fonts.cdnfonts.com/css/opendyslexic');
+
+        body {
+            background-color: #7a005d;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            font-family: sans-serif;
+        }
+
+        #book-container {
+            /* Απαλό, υπόλευκο φόντο για μείωση της οπτικής κόπωσης */
+            background-color: #fdf6e3;
+            width: 90%;
+            max-width: 700px;
+            min-height: 420px;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 15px 30px rgba(0,0,0,0.5), inset 0 0 20px rgba(0,0,0,0.05);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            position: relative;
+        }
+
+        /* Εφέ για τη ράχη του βιβλίου */
+        #book-container::before {
+            content: '';
+            position: absolute;
+            left: 20px;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: rgba(0,0,0,0.1);
+        }
+
+        #story-text {
+            /* Χρήση OpenDyslexic με εναλλακτικές τις Comic Sans και Verdana */
+            font-family: 'OpenDyslexic', 'Comic Sans MS', Verdana, sans-serif;
+            font-size: 24px;
+            line-height: 2.3; /* Μεγάλο διάστιχο για εύκολη παρακολούθηση */
+            letter-spacing: 0.12em; /* Αυξημένη απόσταση μεταξύ των γραμμάτων */
+            color: #222;
+            flex-grow: 1;
+        }
+
+        /* Κάθε λέξη μπαίνει σε ένα span για να μπορεί να τονιστεί ξεχωριστά */
+        .word {
+            display: inline-block;
+            padding: 2px 6px;
+            margin: 0 3px;
+            border-radius: 6px;
+            transition: background-color 0.1s ease-in-out;
+        }
+
+        /* Το χρώμα του τονισμού κατά την ανάγνωση */
+        .highlight {
+            background-color: #fa87d7; /* Απαλό γαλάζιο */
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        #controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 2px dashed #ccc;
+        }
+
+        button {
+            padding: 12px 24px;
+            font-size: 18px;
+            font-family: inherit;
+            cursor: pointer;
+            border: none;
+            border-radius: 8px;
+            background-color: #c9d214;
+            color: white;
+            font-weight: bold;
+            transition: background 0.2s;
+        }
+
+        button:hover {
+            background-color: #bd359d;
+        }
+
+        button:disabled {
+            background-color: #a0b4c7;
+            cursor: not-allowed;
+        }
+
+        #page-number {
+            font-family: 'OpenDyslexic', sans-serif;
+            font-size: 18px;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="book-container">
+        <div id="story-text"></div>
+        
+        <div id="controls">
+            <button id="prevBtn" onclick="changePage(-1)">Προηγούμενο</button>
+            <button id="playBtn" onclick="playReading()">Διάβασέ μου</button>
+            <span id="page-number">Σελίδα 1 / 10</span>
+            <button id="nextBtn" onclick="changePage(1)">Επόμενο</button>
+        </div>
+    </div>
+
+    <script>
+        // Το παραμύθι της Χιονάτης σπασμένο σε 10 μικρές σελίδες
+        const storyPages = [
+            "Μια φορά κι έναν καιρό, μια βασίλισσα έραβε δίπλα στο παράθυρο. Ευχήθηκε να αποκτήσει μια κόρη με δέρμα λευκό σαν το χιόνι και χείλη κόκκινα σαν τριαντάφυλλο.",
+            "Η ευχή της βγήκε αληθινή. Το μωρό ονομάστηκε Χιονάτη. Όμως, η καλή βασίλισσα πέθανε σύντομα, και μια νέα βασίλισσα πήρε τον θρόνο.",
+            "Η νέα βασίλισσα ήταν πολύ όμορφη, αλλά και πολύ εγωίστρια. Είχε έναν μαγικό καθρέφτη και τον ρωτούσε κάθε μέρα: 'Καθρέφτη μου, ποια είναι η πιο όμορφη;'",
+            "Για χρόνια, ο καθρέφτης έλεγε ότι η βασίλισσα ήταν η πιο όμορφη. Καθώς όμως η Χιονάτη μεγάλωνε, γινόταν όλο και πιο γλυκιά και όμορφη.",
+            "Μια μέρα, ο καθρέφτης είπε ότι η Χιονάτη ήταν πια η πιο όμορφη. Η ζηλιάρα βασίλισσα θύμωσε και διέταξε έναν κυνηγό να εξαφανίσει την πριγκίπισσα.",
+            "Ο κυνηγός λυπήθηκε το γλυκό κορίτσι. Την άφησε να τρέξει βαθιά μέσα στο δάσος και της είπε να μην γυρίσει ποτέ ξανά στο παλάτι.",
+            "Η Χιονάτη έτρεχε μέχρι που βρήκε ένα μικρό σπιτάκι. Μέσα υπήρχαν επτά μικρές καρέκλες και επτά μικρά κρεβάτια. Ήταν τόσο κουρασμένη που κοιμήθηκε αμέσως.",
+            "Όταν νύχτωσε, οι επτά νάνοι γύρισαν από το ορυχείο. Βρήκαν το κορίτσι που κοιμόταν και δέχτηκαν να μείνει μαζί τους για να είναι ασφαλής.",
+            "Όμως ο μαγικός καθρέφτης αποκάλυψε στη βασίλισσα πού κρυβόταν η Χιονάτη. Η κακιά βασίλισσα μεταμφιέστηκε σε γιαγιά και της πρόσφερε ένα δηλητηριασμένο μήλο.",
+            "Η Χιονάτη έφαγε μια μπουκιά και έπεσε σε βαθύ ύπνο. Σύντομα όμως, ένας καλός πρίγκιπας την βρήκε. Το φιλί του έσπασε τα μάγια, και έζησαν αυτοί καλά και εμείς καλύτερα."
+        ];
+
+        let currentPageIndex = 0;
+        let isReading = false;
+        
+        const synth = window.speechSynthesis;
+        let utterance;
+
+        const storyTextContainer = document.getElementById('story-text');
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const playBtn = document.getElementById('playBtn');
+        const pageNumberDisplay = document.getElementById('page-number');
+
+        function renderPage() {
+            stopReading(); 
+            
+            const currentText = storyPages[currentPageIndex];
+            // Διαχωρισμός του κειμένου με βάση τα κενά για τη δημιουργία των spans
+            const words = currentText.split(" ").map(word => `<span class="word">${word}</span>`).join(" ");
+            
+            storyTextContainer.innerHTML = words;
+            pageNumberDisplay.innerText = `Σελίδα ${currentPageIndex + 1} / ${storyPages.length}`;
+            
+            prevBtn.disabled = currentPageIndex === 0;
+            nextBtn.disabled = currentPageIndex === storyPages.length - 1;
+        }
+
+        function changePage(direction) {
+            currentPageIndex += direction;
+            if (currentPageIndex < 0) currentPageIndex = 0;
+            if (currentPageIndex >= storyPages.length) currentPageIndex = storyPages.length - 1;
+            renderPage();
+        }
+
+        function playReading() {
+            if (isReading) return; 
+            
+            isReading = true;
+            playBtn.innerText = "Ανάγνωση...";
+            playBtn.disabled = true;
+
+            const wordsDOM = document.querySelectorAll('.word');
+            const currentText = storyPages[currentPageIndex];
+            
+            utterance = new SpeechSynthesisUtterance(currentText);
+            
+            // Ορισμός της γλώσσας στα ελληνικά
+            utterance.lang = 'el-GR';
+            
+            // Ελαφρώς πιο αργός ρυθμός για καλύτερη οπτική παρακολούθηση
+            utterance.rate = 0.8; 
+
+            let wordIndex = 0;
+
+            // Συγχρονισμός του τονισμού με τη φωνή
+            utterance.onboundary = function(event) {
+                if (event.name === 'word') {
+                    wordsDOM.forEach(w => w.classList.remove('highlight'));
+                    
+                    if (wordIndex < wordsDOM.length) {
+                        wordsDOM[wordIndex].classList.add('highlight');
+                        wordIndex++;
+                    }
+                }
+            };
+
+            utterance.onend = function() {
+                stopReading();
+            };
+
+            synth.speak(utterance);
+        }
+
+        function stopReading() {
+            if (synth.speaking) {
+                synth.cancel();
+            }
+            
+            isReading = false;
+            playBtn.innerText = "Διάβασέ μου";
+            playBtn.disabled = false;
+            
+            const wordsDOM = document.querySelectorAll('.word');
+            wordsDOM.forEach(w => w.classList.remove('highlight'));
+        }
+
+        // Εκκίνηση της πρώτης σελίδας
+        renderPage();
+    </script>
+</body>
+</html>

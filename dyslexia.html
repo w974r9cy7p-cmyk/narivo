@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Narivo | Η Ψηφιακή Βιβλιοθήκη</title>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Cinzel:wght@500;700&family=Lora:ital,wght@0,400;1,400&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --bg-color: #4a0022;
+            --shelf-wood: #3d2314;
+            --shelf-shadow: #1f1007;
+            --gold-accent: #f6ff00;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            background: var(--bg-color);
+            background-image: radial-gradient(circle, #6e0034 0%, #300016 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            font-family: 'Lora', serif;
+            overflow-x: hidden;
+            perspective: 1500px;
+        }
+
+        /* Μαγικά σωματίδια στο υπόβαθρο */
+        #magic-canvas {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        .library-container {
+            position: relative;
+            z-index: 10;
+            width: 100%;
+            max-width: 1000px;
+            text-align: center;
+            padding: 20px;
+        }
+
+        h1 {
+            font-family: 'Playfair Display', serif;
+            color: #fcebb6;
+            font-size: 3rem;
+            margin-bottom: 10px;
+            text-shadow: 0px 4px 10px rgba(0,0,0,0.7);
+        }
+
+        .subtitle {
+            font-family: 'Cinzel', serif;
+            color: rgba(252, 235, 182, 0.6);
+            letter-spacing: 4px;
+            font-size: 0.9rem;
+            margin-bottom: 80px;
+        }
+
+        /* Το Ράφι της Βιβλιοθήκης */
+        .bookshelf-wrapper {
+            position: relative;
+            width: 100%;
+            padding-bottom: 24px;
+        }
+
+        .books-row {
+            display: flex;
+            justify-content: center;
+            align-items: flex-end;
+            gap: 25px;
+            padding: 0 40px;
+            height: 350px;
+            transform-style: preserve-3d;
+        }
+
+        .wood-shelf {
+            position: absolute;
+            bottom: 0; left: 0; right: 0;
+            height: 24px;
+            background: var(--shelf-wood);
+            background-image: url('https://www.transparenttextures.com/patterns/wood-pattern.png');
+            border-bottom: 6px solid var(--shelf-shadow);
+            box-shadow: 0px 15px 30px rgba(0,0,0,0.7), inset 0 2px 5px rgba(255,255,255,0.1);
+            border-radius: 4px;
+            transform-style: preserve-3d;
+        }
+
+        .wood-shelf::before {
+            content: '';
+            position: absolute;
+            top: -10px; left: 0; right: 0;
+            height: 10px;
+            background: rgba(0, 0, 0, 0.4);
+            blur: 5px;
+        }
+
+        /* Τα Βιβλία-Κουμπιά */
+        .book-btn {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: center;
+            width: 75px;
+            height: 300px;
+            text-decoration: none;
+            border-radius: 4px 8px 8px 4px;
+            padding: 25px 5px;
+            cursor: pointer;
+            position: relative;
+            background-image: linear-gradient(to right, rgba(255,255,255,0.15), rgba(0,0,0,0.35)), url('https://www.transparenttextures.com/patterns/dark-leather.png');
+            box-shadow: 8px 5px 15px rgba(0,0,0,0.5), inset -3px 0 10px rgba(0,0,0,0.4);
+            transition: transform 0.4s cubic-bezier(0.165, 0.84, 0.44, 1), box-shadow 0.4s;
+            transform-origin: bottom center;
+            border-left: 4px solid rgba(255,255,255,0.1);
+        }
+
+        /* Εφέ όταν περνάει το ποντίκι: Το βιβλίο βγαίνει μπροστά και σηκώνεται */
+        .book-btn:hover {
+            transform: translateZ(40px) translateY(-20px) rotateY(-5deg);
+            box-shadow: 15px 25px 30px rgba(0,0,0,0.6), inset -3px 0 10px rgba(0,0,0,0.2);
+        }
+
+        /* Χρωματικές παραλλαγές για κάθε βιβλίο */
+        .book-1 { background-color: #1a365d; border-top: 6px solid #ffd700; border-bottom: 6px solid #ffd700; } /* Deep Blue */
+        .book-2 { background-color: #2f593a; border-top: 6px solid #e2a812; border-bottom: 6px solid #e2a812; } /* Forest Green */
+        .book-3 { background-color: #741b29; border-top: 6px solid #fcebb6; border-bottom: 6px solid #fcebb6; } /* Crimson */
+        .book-4 { background-color: #442851; border-top: 6px solid #c8ff00; border-bottom: 6px solid #c8ff00; } /* Royal Purple */
+
+        /* Κάθετος Τίτλος στη ράχη του βιβλίου */
+        .book-title {
+            writing-mode: vertical-rl;
+            transform: rotate(180deg);
+            font-family: 'Cinzel', serif;
+            color: #fcebb6;
+            font-size: 1.1rem;
+            font-weight: 700;
+            letter-spacing: 3px;
+            text-align: center;
+            text-transform: uppercase;
+            text-shadow: 1px 1px 3px rgba(0,0,0,0.8);
+            flex-grow: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Ένδειξη γλώσσας στο κάτω μέρος της ράχης */
+        .lang-tag {
+            font-family: 'Playfair Display', serif;
+            font-size: 0.7rem;
+            color: rgba(252, 235, 182, 0.5);
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            border: 1px solid rgba(252, 235, 182, 0.2);
+            padding: 2px 6px;
+            border-radius: 3px;
+            margin-top: 10px;
+        }
+
+        /* Χρυσές διακοσμητικές γραμμές στις ράχες */
+        .book-btn::after {
+            content: '';
+            position: absolute;
+            top: 15px; bottom: 15px; left: 6px;
+            width: 1px;
+            background: rgba(252, 235, 182, 0.15);
+        }
+    </style>
+</head>
+<body>
+
+    <canvas id="magic-canvas"></canvas>
+
+    <div class="library-container">
+        <h1>Narivo Anthology</h1>
+        <div class="subtitle">Επίλεξε ένα παραμύθι • Select a story</div>
+
+        <div class="bookshelf-wrapper">
+            <div class="books-row">
+                
+                <a href="snowwhite.html" class="book-btn book-1">
+                    <div class="book-title">Snow White</div>
+                    <div class="lang-tag">EN</div>
+                </a>
+
+                <a href="hanselandgretel.html" class="book-btn book-2">
+                    <div class="book-title">Hansel & Gretel</div>
+                    <div class="lang-tag">EN</div>
+                </a>
+
+                <a href="hionati.html" class="book-btn book-3">
+                    <div class="book-title">Χιονάτη</div>
+                    <div class="lang-tag">GR</div>
+                </a>
+
+                <a href="hanselkaigkretel.html" class="book-btn book-4">
+                    <div class="book-title">Χάνσελ & Γκρέτελ</div>
+                    <div class="lang-tag">GR</div>
+                </a>
+
+            </div>
+            <div class="wood-shelf"></div>
+        </div>
+    </div>
+
+    <script>
+        // Δημιουργία των αιωρούμενων μαγικών σωματιδίων (ίδιο εφέ με την αρχική σελίδα)
+        const canvas = document.getElementById('magic-canvas');
+        const ctx = canvas.getContext('2d');
+        let particles = [];
+        
+        function resize() { 
+            canvas.width = window.innerWidth; 
+            canvas.height = window.innerHeight; 
+        }
+        window.addEventListener('resize', resize);
+        resize();
+
+        class Particle {
+            constructor() {
+                this.x = Math.random() * canvas.width;
+                this.y = Math.random() * canvas.height;
+                this.size = Math.random() * 2 + 0.1;
+                this.speedX = Math.random() * 0.4 - 0.2;
+                this.speedY = Math.random() * 0.4 - 0.2;
+                this.opacity = Math.random() * 0.5;
+            }
+            update() { 
+                this.x += this.speedX; 
+                this.y += this.speedY; 
+                if (this.x < 0 || this.x > canvas.width) this.speedX *= -1;
+                if (this.y < 0 || this.y > canvas.height) this.speedY *= -1;
+            }
+            draw() {
+                ctx.fillStyle = `rgba(252, 235, 182, ${this.opacity})`;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+
+        function initParticles() { 
+            for (let i = 0; i < 60; i++) particles.push(new Particle()); 
+        }
+        
+        function animate() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            particles.forEach(p => { p.update(); p.draw(); });
+            requestAnimationFrame(animate);
+        }
+        
+        initParticles();
+        animate();
+    </script>
+</body>
+</html>

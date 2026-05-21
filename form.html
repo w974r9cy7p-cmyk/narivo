@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Narivo | Φόρμα Επικοινωνίας & Υποστήριξης</title>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700;900&family=Lora:ital,wght=0,400;0,600;1,400&family=Cinzel:wght@500;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --pink-magic: #ff2d75;
+            --yellow-glow: #c8ff00;
+            --paper-texture: #fdfaf0;
+            --leather-dark: #291e0f;
+            --gold-matte: #ffd700; 
+            --bg-deep: #6e0034;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: var(--bg-deep);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: 'Lora', serif;
+            padding: 20px;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        .bg-glow {
+            position: fixed;
+            width: 400px;
+            height: 400px;
+            background: rgba(255, 45, 117, 0.15);
+            border-radius: 50%;
+            filter: blur(100px);
+            top: -100px;
+            left: -100px;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .bg-glow-2 {
+            position: fixed;
+            width: 500px;
+            height: 500px;
+            background: rgba(200, 255, 0, 0.08);
+            border-radius: 50%;
+            filter: blur(120px);
+            bottom: -150px;
+            right: -150px;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .form-container {
+            background: var(--paper-texture);
+            background-image: url('https://www.transparenttextures.com/patterns/old-mathematics.png');
+            width: 100%;
+            max-width: 650px;
+            padding: 50px 40px;
+            border-radius: 12px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5), 
+                        inset 0 0 40px rgba(41, 30, 15, 0.05);
+            border: 1px solid rgba(41, 30, 15, 0.1);
+            z-index: 10;
+            position: relative;
+        }
+
+        .form-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 6px;
+            background: linear-gradient(90deg, var(--pink-magic), var(--leather-dark), var(--gold-matte));
+            border-radius: 12px 12px 0 0;
+        }
+
+        .form-header {
+            text-align: center;
+            margin-bottom: 35px;
+        }
+
+        .form-header h1 {
+            font-family: 'Playfair Display', serif;
+            color: var(--leather-dark);
+            font-size: 2.3rem;
+            font-weight: 900;
+            margin-bottom: 8px;
+            letter-spacing: 1px;
+        }
+
+        .form-header p {
+            font-family: 'Cinzel', serif;
+            color: #6d543f;
+            font-size: 0.85rem;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+        }
+
+        .form-group {
+            margin-bottom: 22px;
+            position: relative;
+        }
+
+        .form-group label {
+            display: block;
+            font-family: 'Cinzel', serif;
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: var(--leather-dark);
+            margin-bottom: 8px;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        .form-control {
+            width: 100%;
+            background: rgba(0, 0, 0, 0.03);
+            border: 1px solid rgba(41, 30, 15, 0.2);
+            padding: 14px 16px;
+            border-radius: 6px;
+            font-family: 'Lora', serif;
+            font-size: 1rem;
+            color: #291e0f;
+            transition: all 0.3s ease;
+        }
+
+        .form-control:focus {
+            outline: none;
+            background: #ffffff;
+            border-color: var(--pink-magic);
+            box-shadow: 0 0 0 3px rgba(255, 45, 117, 0.1);
+        }
+
+        select.form-control {
+            cursor: pointer;
+            appearance: none;
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23291e0f' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right 16px center;
+            background-size: 16px;
+            padding-right: 40px;
+        }
+
+        textarea.form-control {
+            resize: vertical;
+            min-height: 140px;
+        }
+
+        .btn-submit {
+            width: 100%;
+            background: var(--leather-dark);
+            background-image: url('https://www.transparenttextures.com/patterns/dark-leather.png');
+            color: var(--paper-texture);
+            border: 1px solid #1e1b13;
+            font-family: 'Cinzel', serif;
+            font-size: 1rem;
+            font-weight: 700;
+            letter-spacing: 2px;
+            padding: 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s, background-color 0.3s;
+            margin-top: 10px;
+            text-transform: uppercase;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+
+        .btn-submit:hover {
+            background-color: var(--pink-magic);
+            background-image: none;
+            color: #ffffff;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(255, 45, 117, 0.3);
+        }
+
+        .back-link {
+            display: block;
+            text-align: center;
+            margin-top: 25px;
+            font-family: 'Cinzel', serif;
+            font-size: 0.78rem;
+            letter-spacing: 1px;
+            text-decoration: none;
+            color: #8c6d53;
+            transition: color 0.3s ease;
+            text-transform: uppercase;
+        }
+
+        .back-link:hover {
+            color: var(--pink-magic);
+        }
+
+        #form-result {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 6px;
+            font-size: 0.95rem;
+            text-align: center;
+            display: none;
+            font-weight: 600;
+            background: rgba(45, 255, 159, 0.15);
+            color: #1b6e45;
+            border: 1px solid rgba(45, 255, 159, 0.3);
+        }
+
+        @media (max-width: 480px) {
+            .form-container {
+                padding: 35px 20px;
+            }
+            .form-header h1 {
+                font-size: 1.8rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="bg-glow"></div>
+    <div class="bg-glow-2"></div>
+
+    <div class="form-container">
+        <div class="form-header">
+            <h1>Επικοινωνία</h1>
+            <p>Γίνετε μέρος του οράματος του Narivo</p>
+        </div>
+
+        <form id="narivoContactForm">
+            
+            <div class="form-group">
+                <label for="name">Ονοματεπώνυμο</label>
+                <input type="text" id="name" class="form-control" placeholder="π.χ. Ιωάννης Παπαδόπουλος" required>
+            </div>
+
+            <div class="form-group">
+                <label for="email">Διεύθυνση Email</label>
+                <input type="email" id="email" class="form-control" placeholder="π.χ. john@example.com" required>
+            </div>
+
+            <div class="form-group">
+                <label for="role">Ιδιότητα</label>
+                <select id="role" class="form-control" required>
+                    <option value="" disabled selected>Επιλέξτε μια κατηγορία...</option>
+                    <option value="Γονέας / Κηδεμόνας">Γονέας / Κηδεμόνας</option>
+                    <option value="Εκπαιδευτικός">Εκπαιδευτικός</option>
+                    <option value="Υποστηρικτής / Εθελοντής">Υποστηρικτής / Εθελοντής</option>
+                    <option value="Άλλο">Άλλο</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="message">Το Μήνυμά σας</label>
+                <textarea id="message" class="form-control" placeholder="Γράψτε τις ιδέες, τις ερωτήσεις ή τον τρόπο που επιθυμείτε να βοηθήσετε..." required></textarea>
+            </div>
+            
+            <button type="submit" class="btn-submit">Υποβολη Μηνυματος</button>
+            <div id="form-result"></div>
+        </form>
+
+        <a href="index.html" class="back-link">← Επιστροφη στο βιβλιο</a>
+    </div>
+
+    <script>
+        document.getElementById('narivoContactForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const name = document.getElementById('name').value;
+            const email = document.getElementById('email').value;
+            const role = document.getElementById('role').value;
+            const message = document.getElementById('message').value;
+            const result = document.getElementById('form-result');
+
+            // Constructing the dynamic, structured email body content
+            const targetEmail = "narivostories@gmail.com";
+            const subject = encodeURIComponent("Νέο Μήνυμα Υποστήριξης Narivo");
+            
+            const bodyContent = `Όνομα: ${name}\nEmail: ${email}\nΙδιότητα: ${role}\n\nΜήνυμα:\n${message}`;
+            const body = encodeURIComponent(bodyContent);
+
+            // Generates and triggers the clean browser messaging intent routing
+            window.location.href = `mailto:${targetEmail}?subject=${subject}&body=${body}`;
+
+            // Displays real-time validation inside the UI layout
+            result.innerHTML = "Το μήνυμα προετοιμάστηκε! Παρακαλούμε επιβεβαιώστε την αποστολή στο παράθυρο που άνοιξε.";
+            result.style.display = "block";
+            
+            setTimeout(() => {
+                result.style.display = "none";
+            }, 6000);
+        });
+    </script>
+</body>
+</html>
